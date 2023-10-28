@@ -51,18 +51,32 @@ resource "aws_route" "private_subnet_routes" {
   nat_gateway_id         = aws_nat_gateway.nat_gateways[count.index].id
 }
 
+resource "aws_route_table" "public_route_table" {
+  vpc_id = aws_vpc.my_vpc.id
 
-# Create a route table for each public subnet
-resource "aws_route_table" "public_route_tables" {
-  count = length(var.azs)
-  vpc_id = aws_vpc.custom_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.my_igw.id
+  }
 }
-# Create a route in each public subnet route table to direct traffic to the Internet Gateway
-resource "aws_route" "public_subnet_routes" {
-  count = 2
-  route_table_id = aws_route_table.public_route_tables[count.index].id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id = aws_internet_gateway.vpc_igw.id
+
+resource "aws_route_table_association" "public_association" {
+  for_each      = aws_subnet.public_subnet
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public_route_table.id
 }
+
+# # Create a route table for each public subnet
+# resource "aws_route_table" "public_route_tables" {
+#   count = length(var.azs)
+#   vpc_id = aws_vpc.custom_vpc.id
+# }
+# # Create a route in each public subnet route table to direct traffic to the Internet Gateway
+# resource "aws_route" "public_subnet_routes" {
+#   count = 2
+#   route_table_id = aws_route_table.public_route_tables[count.index].id
+#   destination_cidr_block = "0.0.0.0/0"
+#   gateway_id = aws_internet_gateway.vpc_igw.id
+# }
 
 
