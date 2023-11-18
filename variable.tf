@@ -6,6 +6,7 @@ variable "azs" {
   type = list(string)
 }
 
+
 variable "publicsubnet_cidr" {
   type = list(string)
 }
